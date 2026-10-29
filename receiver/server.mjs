@@ -13,6 +13,12 @@ function valid(r){return typeof r.repository==='string'&&typeof r.branch==='stri
 let queue=Promise.resolve();
 http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
+  if(req.method==='GET'&&url.pathname.startsWith('/submission-context/')){
+    if(!authorized(req)){res.writeHead(401).end();return;}
+    const id=url.pathname.slice('/submission-context/'.length);
+    if(!/^[-a-zA-Z0-9]{1,80}$/.test(id)){res.writeHead(400).end();return;}
+    try{res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'}).end(await readFile(path.join(root,'submission-contexts',id+'.json')));}catch{res.writeHead(404).end();}return;
+  }
   if(req.method==='GET'&&url.pathname==='/health'){res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify({status:'ready',receiver:'CSC418 local test report receiver'}));return;}
   if(req.method==='GET'&&['/dashboard','/report'].includes(url.pathname)){
     if(!['127.0.0.1:'+port,'localhost:'+port].includes(req.headers.host)){res.writeHead(403).end();return;}

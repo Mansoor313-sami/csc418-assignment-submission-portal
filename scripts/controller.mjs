@@ -1,6 +1,6 @@
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {readFile,readdir,writeFile} from 'node:fs/promises';
+import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
 import {randomBytes} from 'node:crypto';
 const exec=promisify(execFile), repo='repos/Mansoor313-sami/csc418-assignment-submission-portal';
 const session=randomBytes(32).toString('hex');
@@ -34,11 +34,19 @@ export async function controller(req,res,url){
  if(req.method==='POST'&&url.pathname==='/api/action'){
  if(req.headers['x-controller-session']!==session){respond(403,{error:'Refresh the local dashboard'});return true;}
  if(busy){respond(409,{error:'Another action is already running'});return true;}
- let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>2048)throw Error('Request too large');}
- const {action}=JSON.parse(raw);if(!['run','defect','fix'].includes(action)){respond(400,{error:'Unknown action'});return true;}
+ let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>8192)throw Error('Request too large');}
+ const {action,submission}=JSON.parse(raw);if(!['run','defect','fix'].includes(action)){respond(400,{error:'Unknown action'});return true;}
+ let context=null;
+ if(submission){
+ const {validateSubmission}=await import('../web/portal.mjs');
+ if(Object.keys(validateSubmission(submission)).length||!/^[-a-zA-Z0-9]{1,80}$/.test(submission.id||'')){respond(400,{error:'Valid submission details are required'});return true;}
+ context=Object.fromEntries(['id','name','registration','title','url'].map(key=>[key,submission[key]]));
+ if(Object.values(context).some(v=>v.length>500)){respond(400,{error:'Submission details are too long'});return true;}
+ await mkdir('submission-contexts',{recursive:true});await writeFile('submission-contexts/'+context.id+'.json',JSON.stringify(context));
+ }
  busy=true;
  try{
- if(action==='run'){await api('/actions/workflows/ci.yml/dispatches','POST',{ref:'main'});respond(200,{message:'Test run requested. Waiting for GitHub…'});}
+ if(action==='run'){await api('/actions/workflows/ci.yml/dispatches','POST',{ref:'main',inputs:{submission:context?JSON.stringify(context):''}});respond(200,{message:'Test run requested. Waiting for GitHub…'});}
  else {
  // Update exactly one known validation expression through GitHub's Contents API.
  const file=await api('/contents/web/portal.mjs?ref=main');const original=Buffer.from(file.content,'base64').toString('utf8');
@@ -46,7 +54,7 @@ export async function controller(req,res,url){
  const bad="if (field !== 'registration' && (typeof input[field] !== 'string' || !input[field].trim()))";
  const from=action==='defect'?good:bad,to=action==='defect'?bad:good;
  if(!original.includes(from)){respond(409,{error:action==='defect'?'The demo defect is already present. Push the fix first.':'Validation is already fixed. No change was pushed.'});}
- else {const result=await api('/contents/web/portal.mjs','PUT',{message:action==='defect'?'Demo: introduce registration validation defect':'Fix: restore registration validation',content:Buffer.from(original.replace(from,to)).toString('base64'),sha:file.sha,branch:'main'});respond(200,{message:action==='defect'?'Defect pushed. GitHub will test this commit.':'Fix pushed. GitHub will test this commit.',commit:result.commit.sha});}
+ else {const result=await api('/contents/web/portal.mjs','PUT',{message:(action==='defect'?'Demo: introduce registration validation defect':'Fix: restore registration validation')+(context?'\n\nSubmission-ID: '+context.id:''),content:Buffer.from(original.replace(from,to)).toString('base64'),sha:file.sha,branch:'main'});respond(200,{message:action==='defect'?'Defect pushed. GitHub will test this commit.':'Fix pushed. GitHub will test this commit.',commit:result.commit.sha});}
  }
  }finally{busy=false;}return true;
  }

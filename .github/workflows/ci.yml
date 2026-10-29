@@ -2,6 +2,12 @@ name: Portal tests and reports
 on:
   push:
   workflow_dispatch:
+    inputs:
+      submission:
+        description: Submission details for this report
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -15,6 +21,10 @@ jobs:
         with:
           node-version: '22'
       - name: Execute automated tests
+        env:
+          SUBMISSION_JSON: ${{ inputs.submission }}
+          REPORT_RECEIVER_URL: ${{ secrets.REPORT_RECEIVER_URL }}
+          REPORT_TOKEN: ${{ secrets.REPORT_TOKEN }}
         run: npm test
       - name: Deliver completed report to local receiver
         if: ${{ always() && hashFiles('reports/test-report.json') != '' }}

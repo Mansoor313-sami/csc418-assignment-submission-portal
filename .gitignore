@@ -12,3 +12,5 @@ tmp/
 *.log
 *.zip
 __pycache__/
+
+submission-contexts/

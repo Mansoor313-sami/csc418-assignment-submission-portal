@@ -130,3 +130,12 @@ The controller binds to loopback, validates Host and Origin, and requires a
 per-process session value for mutations. Credentials never enter browser assets.
 The buttons update GitHub directly; run `git pull --ff-only` before editing the
 local checkout after a demonstration.
+
+### Submission-specific reports
+
+Upload passes the submitted name, registration, title, URL and submission ID to
+the workflow. The valid-submission test uses those entered values. Each JSON
+report and email includes the exact submitted link and clearly labels the portal
+repository whose validation code was tested. The linked repository's code is not
+executed. Defect/fix push runs retrieve their matching submission context from
+the authenticated local receiver; context files are excluded from Git and the ZIP.

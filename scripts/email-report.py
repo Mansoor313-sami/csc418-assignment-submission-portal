@@ -10,10 +10,14 @@ missing = [key for key in required if not os.getenv(key)]
 if missing:
     raise SystemExit('Missing email configuration: ' + ', '.join(missing))
 message = EmailMessage()
-message['Subject'] = f"[{report['overall_status'].upper()}] CSC418 tests {report['commit_sha'][:8]}"
+submission = report.get('submission') or {}
+title = ' '.join(submission.get('title', 'Portal CI').split())[:80]
+message['Subject'] = f"[{report['overall_status'].upper()}] {title} | {report['pipeline_run_id']}"
 message['From'] = os.getenv('SMTP_FROM') or os.environ['SMTP_USER']
 message['To'] = os.environ['REPORT_EMAIL_TO']
-lines = [f"Repository: {report['repository']}", f"Branch: {report['branch']}", f"Commit: {report['commit_sha']}", f"Run: {report['pipeline_run_id']}", f"Result: {report['overall_status'].upper()}", f"Total: {report['total']} | Passed: {report['passed']} | Failed: {report['failed']}", '']
+lines = [f"Tested portal repository: {report['repository']}", f"Branch: {report['branch']}", f"Commit: {report['commit_sha']}", f"Run: {report['pipeline_run_id']}", f"Result: {report['overall_status'].upper()}", f"Total: {report['total']} | Passed: {report['passed']} | Failed: {report['failed']}", '']
+if submission:
+    lines = [f"Student: {submission['name']}", f"Registration: {submission['registration']}", f"Assignment: {submission['title']}", f"Submitted link: {submission['url']}", f"Submission ID: {submission['id']}", '', 'Scope: These results test the assignment portal using the submitted details. They do not test code inside the linked repository.', ''] + lines
 for test in report['tests']:
     lines.append(f"{test['result'].upper()}: {test['name']}")
     if test.get('failure_message'):
