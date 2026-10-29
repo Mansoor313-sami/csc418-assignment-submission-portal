@@ -23,8 +23,9 @@ export async function controller(req,res,url){
  try{
  if(req.method==='GET'&&url.pathname==='/api/session'){respond(200,{session});return true;}
  if(req.method==='GET'&&url.pathname==='/api/status'){
- const runs=await api('/actions/workflows/ci.yml/runs?branch=main&per_page=6');
- const id=url.searchParams.get('run')||runs.workflow_runs[0]?.id;
+ const runs=await api('/actions/workflows/ci.yml/runs?branch=main&per_page=20');
+ const submissionId=url.searchParams.get('submission');
+ const id=url.searchParams.get('run')||(submissionId?runs.workflow_runs.find(r=>r.display_title.includes(submissionId))?.id:runs.workflow_runs[0]?.id);
  const run=id?runs.workflow_runs.find(r=>String(r.id)===String(id))||await api('/actions/runs/'+encodeURIComponent(id)):null;
  const jobs=run?await api('/actions/runs/'+run.id+'/jobs'): {jobs:[]};
  let reports=[];try{for(const file of await readdir('report-history')){if(/^\d.*\.json$/.test(file))reports.push(JSON.parse(await readFile('report-history/'+file,'utf8')));}}catch{}

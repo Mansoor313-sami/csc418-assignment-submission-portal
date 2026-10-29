@@ -1,4 +1,5 @@
 name: Portal tests and reports
+run-name: ${{ inputs.submission != '' && format('Submission {0}', fromJSON(inputs.submission).id) || github.event.head_commit.message || 'Portal tests and reports' }}
 on:
   push:
   workflow_dispatch:

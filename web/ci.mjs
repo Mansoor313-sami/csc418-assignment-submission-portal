@@ -7,13 +7,13 @@ function banner(text,kind='running'){$('result-banner').textContent=text;$('resu
 function lock(value){document.querySelectorAll('[data-action]').forEach(b=>b.disabled=value);$('upload-button').disabled=value;}
 function clearResults(){banner('Starting tests');$('pipeline').textContent='Starting';for(const key of ['total','passed','failed'])$(key).textContent='—';status('report-status','Local report: waiting');status('email-status','Email: waiting');status('deploy-status','Deployment: waiting');$('tests').innerHTML='<tr><td colspan="3">Waiting for the new test run.</td></tr>';}
 async function refresh(){if(polling||!active||pending)return;polling=true;try{
- const data=await request('status'+(selected?'?run='+encodeURIComponent(selected):''));$('connection').textContent='Connected';
+ const data=await request('status'+(selected?'?run='+encodeURIComponent(selected):currentSubmission?'?submission='+encodeURIComponent(currentSubmission.id):''));$('connection').textContent='Connected';
  if(waitingRun&&String(data.run?.id)===waitingRun)return;
  waitingRun='';lastRun=String(data.run?.id||'');
  $('runs').replaceChildren(...data.runs.map(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`#${r.id} · ${r.name} · ${r.conclusion||r.status}`;return o;}));
  if(data.run){$('runs').value=data.run.id;$('run-link').href=data.run.html_url;$('pipeline').textContent=data.run.conclusion||data.run.status;$('commit').textContent=`Commit ${data.run.head_sha.slice(0,8)} · ${data.run.event==='push'?'Push-triggered run':'Manual test run'} · Attempt ${data.run.run_attempt}`;}
  const report=data.report;
- if(waitingRun===''&&currentSubmission&&report?.submission?.id!==currentSubmission.id){banner('Waiting for this submission’s report.');return;}
+ if(report&&currentSubmission&&report.submission?.id!==currentSubmission.id){banner('Waiting for this submission’s report.');return;}
  for(const key of ['total','passed','failed'])$(key).textContent=report?report[key]:'—';
  const steps=data.jobs.flatMap(j=>j.steps||[]),delivery=steps.find(s=>s.name==='Deliver completed report to local receiver'),email=steps.find(s=>s.name==='Email completed report');
  status('report-status',report?'Local report received':delivery?.conclusion==='failure'?'Local report delivery failed':'Local report: waiting',report?'success':delivery?.conclusion==='failure'?'failed':'');
@@ -30,7 +30,7 @@ async function refresh(){if(polling||!active||pending)return;polling=true;try{
  lock(pending||data.busy||!done);
  }catch(e){$('connection').textContent='Connection interrupted';$('action-message').textContent=e.message;lock(false);}finally{polling=false;}}
 async function perform(action){pending=true;lock(true);$('action-message').textContent='Sending request to GitHub';try{
- const previous=await request('status');lastRun=String(previous.run?.id||'');
+ const previous=await request('status'+(currentSubmission?'?submission='+encodeURIComponent(currentSubmission.id):''));lastRun=String(previous.run?.id||'');
  const result=await request('action',{method:'POST',body:JSON.stringify({action,submission:currentSubmission})});$('action-message').textContent=result.message;waitingRun=lastRun;selected='';clearResults();
  }catch(e){banner('Could not start the run.','failed');$('action-message').textContent=e.message;lock(false);}finally{pending=false;refresh();}}
 $('runs').addEventListener('change',()=>{selected=$('runs').value;refresh();});
