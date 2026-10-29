@@ -1,0 +1,13 @@
+{
+  "name": "csc418-assignment-portal",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node tests/run.mjs",
+    "receiver": "node receiver/server.mjs",
+    "deliver": "node scripts/deliver-report.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

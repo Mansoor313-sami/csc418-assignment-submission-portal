@@ -1,0 +1,14 @@
+tools/
+node_modules/
+.env
+.env.*
+!.env.example
+reports/
+test-report.json
+report-history/
+evidence/
+output/
+tmp/
+*.log
+*.zip
+__pycache__/

@@ -1,0 +1,65 @@
+name: Portal tests and reports
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute automated tests
+        run: npm test
+      - name: Deliver completed report to local receiver
+        if: ${{ always() && hashFiles('reports/test-report.json') != '' }}
+        env:
+          REPORT_RECEIVER_URL: ${{ secrets.REPORT_RECEIVER_URL }}
+          REPORT_TOKEN: ${{ secrets.REPORT_TOKEN }}
+        run: npm run deliver
+      - name: Email completed report
+        if: ${{ always() && hashFiles('reports/test-report.json') != '' }}
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          REPORT_EMAIL_TO: ${{ vars.REPORT_EMAIL_TO }}
+        run: python scripts/email-report.py
+      - name: Preserve report as a pipeline artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ github.run_id }}
+          path: reports/test-report.json
+          if-no-files-found: error
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && needs.test.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - name: Deploy tested frontend
+        id: deployment
+        uses: actions/deploy-pages@v4

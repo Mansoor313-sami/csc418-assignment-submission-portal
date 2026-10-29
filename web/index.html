@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Submitly | Assignment Submission Portal</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<header><a class="brand" href="./"><span class="logo">S</span> submitly<span class="brand-dot">.</span></a><nav><span class="nav-active">Submission portal</span><a href="#saved">My submissions</a></nav><span class="course">CSC418 <span>DevOps Lab</span></span></header>
+<main>
+<section class="intro"><div><div class="eyebrow">STUDENT WORKSPACE <span>•</span> FALL 2026</div><h1>Your work. All in one place.</h1><p>Submit your assignment link and keep a clear record of your work.</p></div><div class="intro-note"><span class="note-icon">↗</span><div>One link. Ready to review.<small>GitHub, Google Drive, or any valid web link</small></div></div></section>
+<div class="workspace">
+<section class="card form-card"><div class="card-heading"><span class="section-icon">↥</span><div><h2>Submit an assignment</h2><p>Fill in your details to add a new submission.</p></div><span class="step">01</span></div>
+<form id="submission-form" novalidate>
+<div class="field"><label for="name">Student name <span>*</span></label><input id="name" name="name" autocomplete="name" placeholder="e.g. Mansoor Ahmad" aria-describedby="name-error"><small id="name-error" class="error"></small></div>
+<div class="field"><label for="registration">Registration number <span>*</span></label><input id="registration" name="registration" placeholder="e.g. FA23-BSE-037" aria-describedby="registration-error"><small id="registration-error" class="error"></small></div>
+<div class="field"><label for="title">Assignment title <span>*</span></label><input id="title" name="title" placeholder="e.g. DevOps Lab Midterm" aria-describedby="title-error"><small id="title-error" class="error"></small></div>
+<div class="field"><label for="url">Submission URL <span>*</span></label><input id="url" name="url" type="url" placeholder="https://github.com/username/project" aria-describedby="url-error"><small id="url-error" class="error"></small><p class="hint">Make sure your instructor can open the link.</p></div>
+<button type="submit">Save submission <span>→</span></button><div id="message" role="status" aria-live="polite"></div>
+</form><div class="form-foot"><span>ⓘ</span> All fields are required. No file upload needed.</div></section>
+<section id="saved" class="card saved-card"><div class="card-heading"><span class="section-icon pale">▤</span><div><h2>Saved submissions <span id="count" class="count">0</span></h2><p>Your submitted work, with the latest first.</p></div><span class="live"><i></i> Local record</span></div><div id="submissions"></div><div class="storage-note"><span>◈</span><div><strong>Saved in this browser</strong><p>This static demo keeps submissions on this device. Use the same browser to see them again.</p></div></div></section>
+</div><footer><span>SUBMITLY / ASSIGNMENT SUBMISSION PORTAL</span><span>CSC418 DevOps Lab Midterm · Mansoor Ahmad</span></footer>
+</main><script type="module" src="app.mjs"></script>
+</body></html>
