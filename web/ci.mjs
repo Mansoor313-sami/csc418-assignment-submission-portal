@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 let session='',selected='',pending=false,polling=false,lastMail='',lastRun='',waitingRun='',armed='',active=false,unlocked=false,timer;
 const local=['127.0.0.1','localhost'].includes(location.hostname);
-async function request(path,options={}){const r=await fetch('/api/'+path,{...options,headers:{'Content-Type':'application/json','X-Controller-Session':session,...options.headers}});const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;}
+async function request(path,options={}){const r=await fetch((local?'/api/':'http://127.0.0.1:4173/api/')+path,{...options,headers:{'Content-Type':'application/json','X-Controller-Session':session,...options.headers}});const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;}
 function status(id,text,kind=''){const el=$(id);el.textContent=text;el.className=kind;}
 function banner(text,kind='running'){$('result-banner').textContent=text;$('result-banner').className='result-banner '+kind;}
 function lock(value){document.querySelectorAll('[data-action]').forEach(b=>b.disabled=value);$('upload-button').disabled=value;}
@@ -35,9 +35,8 @@ $('runs').addEventListener('change',()=>{selected=$('runs').value;refresh();});
 for(const button of document.querySelectorAll('[data-action]'))button.addEventListener('click',()=>{const action=button.dataset.action;if(action!=='run'&&armed!==action){armed=action;$('action-message').textContent=action==='defect'?'Click Push Defect again to confirm the change to main.':'Click Fix Defect and Push again to confirm the correction.';return;}armed='';perform(action);});
 export async function startSubmissionChecks(submission){
  if(pending)return;
- lock(true);
+ lock(true);armed='';
  $('ci-dashboard').hidden=false;$('saved').hidden=true;$('submission-context').textContent=`${submission.title} · ${submission.name} · ${submission.registration}`;$('controls').hidden=true;unlocked=false;clearResults();
- if(!local){$('local-help').hidden=false;$('connection').textContent='Local portal required';banner('Open the local portal to run automated tests.','failed');return;}
- try{session=(await request('session')).session;active=true;await perform('run');if(!timer)timer=setInterval(refresh,6000);}catch(e){banner('Could not connect to the local controller.','failed');$('action-message').textContent=e.message;lock(false);}
+ try{session=(await request('session')).session;active=true;await perform('run');if(!timer)timer=setInterval(refresh,6000);}catch(e){$('local-help').hidden=false;banner('Start the local controller, then click Upload again.','failed');$('action-message').textContent='If your browser asks for local network access, allow it for this portal.';lock(false);}
 }
 document.querySelector('a[href="#saved"]')?.addEventListener('click',()=>{$('saved').hidden=false;});

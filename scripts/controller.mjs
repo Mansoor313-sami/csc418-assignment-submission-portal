@@ -15,7 +15,11 @@ export async function controller(req,res,url){
  if(!url.pathname.startsWith('/api/'))return false;
  const respond=(status,data)=>res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'}).end(JSON.stringify(data));
  if(!['127.0.0.1:'+req.socket.localPort,'localhost:'+req.socket.localPort].includes(req.headers.host)){respond(403,{error:'Local access only'});return true;}
- if(req.headers.origin && req.headers.origin!==`http://${req.headers.host}`){respond(403,{error:'Open the local dashboard to continue'});return true;}
+ const origin=req.headers.origin;
+ const allowed=new Set([`http://${req.headers.host}`,'https://mansoor313-sami.github.io']);
+ if(origin&&!allowed.has(origin)){respond(403,{error:'Open the submission portal to continue'});return true;}
+ if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
+ if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, X-Controller-Session','Access-Control-Allow-Private-Network':'true','Access-Control-Max-Age':'600'}).end();return true;}
  try{
  if(req.method==='GET'&&url.pathname==='/api/session'){respond(200,{session});return true;}
  if(req.method==='GET'&&url.pathname==='/api/status'){

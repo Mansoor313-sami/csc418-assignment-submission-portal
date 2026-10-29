@@ -122,9 +122,9 @@ it does not claim that the recipient opened the message.
 
 The local controller requires Windows PowerShell and a GitHub sign-in through
 Git Credential Manager with permission to update this repository and run Actions.
-Keep the receiver and tunnel running. GitHub Pages hosts the static form; automatic
-CI control is available through this local portal because credentials stay on
-your computer. `/ci.html` redirects to the same single-page portal.
+Keep the receiver and tunnel running. The GitHub Pages portal can also connect to this local controller on the same page.
+Allow local network access if the browser asks. CORS accepts only the local portal
+and this account's GitHub Pages origin. Credentials stay on your computer. `/ci.html` redirects to the same single-page portal.
 
 The controller binds to loopback, validates Host and Origin, and requires a
 per-process session value for mutations. Credentials never enter browser assets.
