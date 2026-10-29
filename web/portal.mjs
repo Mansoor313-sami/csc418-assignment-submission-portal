@@ -3,7 +3,7 @@ export const STORAGE_KEY = 'csc418-submissions-v1';
 export function validateSubmission(input) {
   const errors = {};
   for (const [field, label] of Object.entries({ name: 'Student name', registration: 'Registration number', title: 'Assignment title', url: 'Submission URL' })) {
-    if (field !== 'registration' && (typeof input[field] !== 'string' || !input[field].trim())) errors[field] = `${label} is required.`;
+    if (typeof input[field] !== 'string' || !input[field].trim()) errors[field] = `${label} is required.`;
   }
   if (!errors.url) {
     try {
