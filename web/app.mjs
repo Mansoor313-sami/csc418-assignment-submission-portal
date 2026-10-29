@@ -1,3 +1,4 @@
+import {startSubmissionChecks} from './ci.mjs';
 import {saveSubmission, listSubmissions} from './portal.mjs';
 const form = document.querySelector('form');
 const message = document.querySelector('#message');
@@ -7,7 +8,7 @@ function render() {
   const container = document.querySelector('#submissions');
   container.replaceChildren();
   if (!items.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-symbol">▤</div><h3>A fresh start for your next submission</h3><p>Your saved assignments will appear here.<br>Add your first submission using the form.</p></div>';
+    container.innerHTML = '<div class="empty"><h3>A fresh start for your next submission</h3><p>Your saved assignments will appear here.<br>Add your first submission using the form.</p></div>';
     return;
   }
   for (const item of items) {
@@ -32,7 +33,7 @@ form.addEventListener('submit', event => {
       message.className='failure'; message.textContent='Please check the highlighted fields. Your submission was not saved.';
       document.querySelector('[aria-invalid=true]')?.focus(); return;
     }
-    message.className='';message.textContent='Submission saved. Your assignment is now in the list.'; form.reset(); render();
+    message.className='';message.textContent='Submission saved. Starting automated checks.'; render();startSubmissionChecks(result.submission);
   } catch {message.className='failure'; message.textContent='Could not save your submission. Check that browser storage is available.';}
 });
 try {render();} catch {message.className='failure'; message.textContent='Could not read saved submissions. Please check your browser storage.';}

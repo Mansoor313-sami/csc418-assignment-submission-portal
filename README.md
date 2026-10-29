@@ -101,23 +101,32 @@ The receiver must stay online during the demonstration. See `DEMONSTRATION.md`
 for the actual verified runs once the demonstration is complete. Open
 http://127.0.0.1:5055/dashboard to inspect saved results and select older runs.
 
-## CI dashboard
+## Submission and CI on one page
 
-Open `http://127.0.0.1:4173/ci.html` after `npm.cmd start`. The navbar also links
-to this dashboard. On GitHub Pages, the tab provides a link to the local controller.
-The controller requires Windows PowerShell and an existing GitHub sign-in in
+Open `http://127.0.0.1:4173/` after `npm.cmd start`. Fill in the four fields
+and click **Upload**. A valid submission is saved in browser storage and starts
+a real GitHub Actions run. The right-hand panel shows that run's results, local
+report delivery, email sending, and deployment. This tests the portal code on main;
+it does not execute code from the submitted assignment URL.
+
+After the first successful run, three buttons appear below the results:
+
+- **Run Tests** starts another workflow run on main.
+- **Push Defect** commits the predefined registration-validation defect to main.
+- **Fix Defect and Push** commits the corresponding correction.
+
+The latter two actions require a second click to confirm. Controls remain
+available after a failed demonstration so the defect can be fixed. Select an
+older run to review its results. Mail sent follows the actual SMTP sending step;
+it does not claim that the recipient opened the message.
+
+The local controller requires Windows PowerShell and a GitHub sign-in through
 Git Credential Manager with permission to update this repository and run Actions.
+Keep the receiver and tunnel running. GitHub Pages hosts the static form; automatic
+CI control is available through this local portal because credentials stay on
+your computer. `/ci.html` redirects to the same single-page portal.
 
-- **Run Tests** starts the existing GitHub Actions workflow on main.
-- **Push Defect** commits a predefined registration-validation defect to main.
-- **Push Fix** commits the corresponding correction to main.
-- Select an older run to inspect its actual test results and failure messages.
-- Local Report Received is shown only when the matching run and attempt exist
-  in local report history. Mail Sent follows the GitHub email step's success.
-- Deployment status comes from the selected run's deploy job.
-
-Keep the receiver and tunnel running before using these buttons. The controller
-binds to loopback, validates Host and Origin, and requires a per-process session
-value for mutations. Credentials never enter the browser or static Pages files.
-The buttons change GitHub directly; run `git pull --ff-only` before editing the
-local checkout again after a demonstration.
+The controller binds to loopback, validates Host and Origin, and requires a
+per-process session value for mutations. Credentials never enter browser assets.
+The buttons update GitHub directly; run `git pull --ff-only` before editing the
+local checkout after a demonstration.
