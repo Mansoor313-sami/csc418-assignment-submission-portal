@@ -49,13 +49,16 @@ views are available at `/`, `/latest`, and `/history`.
 GitHub-hosted localhost is not this computer. Use a tunnel to this receiver:
 
 ```powershell
-cloudflared tunnel --url http://127.0.0.1:5055
+ssh -T -o ServerAliveInterval=15 -R 80:127.0.0.1:5055 nokey@localhost.run
 ```
 
-Set repository Actions secrets `REPORT_RECEIVER_URL` to the printed HTTPS URL
+Accept the SSH host-key prompt on the first connection. Set repository Actions
+secrets `REPORT_RECEIVER_URL` to the printed HTTPS URL
 and `REPORT_TOKEN` to the same token as the receiver. Keep both processes running.
 Only authenticated POSTs can save results. Evidence-reading routes refuse tunnel
-hostnames. Quick-tunnel addresses change after restart; update the secret then.
+hostnames. Free-tunnel addresses change after restart; update the secret then.
+The address is temporary, so check `/health` before each demonstration.
+You can also use `cloudflared tunnel --url http://127.0.0.1:5055` as an alternative.
 For a local delivery check, set both environment values and run `npm.cmd run deliver`.
 
 ## Configure the email bonus
@@ -95,4 +98,5 @@ Every push to any branch triggers tests; `workflow_dispatch` also allows reruns.
 
 Never commit `.env`, passwords, tokens, local report data, or personal submissions.
 The receiver must stay online during the demonstration. See `DEMONSTRATION.md`
-for the actual verified runs once the demonstration is complete.
+for the actual verified runs once the demonstration is complete. Open
+http://127.0.0.1:5055/dashboard to inspect saved results and select older runs.

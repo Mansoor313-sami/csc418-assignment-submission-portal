@@ -14,6 +14,15 @@ let queue=Promise.resolve();
 http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
   if(req.method==='GET'&&url.pathname==='/health'){res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify({status:'ready',receiver:'CSC418 local test report receiver'}));return;}
+  if(req.method==='GET'&&['/dashboard','/report'].includes(url.pathname)){
+    if(!['127.0.0.1:'+port,'localhost:'+port].includes(req.headers.host)){res.writeHead(403).end();return;}
+    try{
+      if(url.pathname==='/dashboard'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(await readFile(new URL('./dashboard.html',import.meta.url)));return;}
+      const file=url.searchParams.get('file')||'';
+      if(!/^[\w.-]+\.json$/.test(file)){res.writeHead(400).end();return;}
+      res.writeHead(200,{'Content-Type':'application/json'}).end(await readFile(path.join(root,'report-history',file)));
+    }catch{res.writeHead(404).end('Report not found');}return;
+  }
   if(req.method==='GET'&&url.pathname==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end('<html><head><title>Local Test Report Receiver</title></head><body style="font:18px Segoe UI;max-width:1000px;margin:45px auto;background:#f4f7f5;color:#234637"><h1>Local Test Report Receiver</h1><p>Receiver is running on this computer. Completed CI reports are saved automatically.</p><p><a href="/latest">View latest test-report.json</a> | <a href="/history">View report history</a></p><p>POST /reports requires the configured secret token.</p></body></html>');return;}
   // These read-only evidence routes exist on loopback only; never expose reports through a tunnel.
   if(req.method==='GET'&&['/latest','/history'].includes(url.pathname)){
