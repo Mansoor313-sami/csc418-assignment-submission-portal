@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 let session='',selected='',pending=false,polling=false,lastMail='',lastRun='',waitingRun='',armed='',active=false,unlocked=false,timer;
 const local=['127.0.0.1','localhost'].includes(location.hostname);
-async function request(path,options={}){const r=await fetch((local?'/api/':'http://127.0.0.1:4173/api/')+path,{...options,headers:{'Content-Type':'application/json','X-Controller-Session':session,...options.headers}});const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;}
+async function request(path,options={}){const r=await fetch((local?'/api/':'http://127.0.0.1:4173/api/')+path,{signal:AbortSignal.timeout(30000),...options,headers:{'Content-Type':'application/json','X-Controller-Session':session,...options.headers}});const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;}
 function status(id,text,kind=''){const el=$(id);el.textContent=text;el.className=kind;}
 function banner(text,kind='running'){$('result-banner').textContent=text;$('result-banner').className='result-banner '+kind;}
 function lock(value){document.querySelectorAll('[data-action]').forEach(b=>b.disabled=value);$('upload-button').disabled=value;}
