@@ -100,3 +100,24 @@ Never commit `.env`, passwords, tokens, local report data, or personal submissio
 The receiver must stay online during the demonstration. See `DEMONSTRATION.md`
 for the actual verified runs once the demonstration is complete. Open
 http://127.0.0.1:5055/dashboard to inspect saved results and select older runs.
+
+## CI dashboard
+
+Open `http://127.0.0.1:4173/ci.html` after `npm.cmd start`. The navbar also links
+to this dashboard. On GitHub Pages, the tab provides a link to the local controller.
+The controller requires Windows PowerShell and an existing GitHub sign-in in
+Git Credential Manager with permission to update this repository and run Actions.
+
+- **Run Tests** starts the existing GitHub Actions workflow on main.
+- **Push Defect** commits a predefined registration-validation defect to main.
+- **Push Fix** commits the corresponding correction to main.
+- Select an older run to inspect its actual test results and failure messages.
+- Local Report Received is shown only when the matching run and attempt exist
+  in local report history. Mail Sent follows the GitHub email step's success.
+- Deployment status comes from the selected run's deploy job.
+
+Keep the receiver and tunnel running before using these buttons. The controller
+binds to loopback, validates Host and Origin, and requires a per-process session
+value for mutations. Credentials never enter the browser or static Pages files.
+The buttons change GitHub directly; run `git pull --ff-only` before editing the
+local checkout again after a demonstration.
